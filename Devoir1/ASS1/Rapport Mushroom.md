@@ -1,11 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
-
-# Peux-tu me fournir une description détaillée et complète du jeu de données disponible à cette adresse : [https://archive.ics.uci.edu/dataset/73/mushroom](https://archive.ics.uci.edu/dataset/73/mushroom) ? J'aimerais connaître ses caractéristiques principales, les types de variables, le nombre d'exemples, la tâche d'analyse associée, et toute information pertinente pour comprendre et exploiter ce dataset. ce  forme  de rapport
-
-Voici un rapport détaillé et complet sur le jeu de données Mushroom disponible sur le site UCI Machine Learning Repository :
-
-***
-
 # Rapport sur le jeu de données Mushroom (UCI)
 
 ## Description générale
