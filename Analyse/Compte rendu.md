@@ -1,6 +1,5 @@
 # Rapport d'Analyse : Performance Académique des Étudiants
-1. Préparé par:AkHRAIS Hasnae
-2. Groupe:CAC-1
+Préparé par:AkHRAIS Hasnae  Groupe:CAC-1
 
 <img src="Hasnae.jfif" style="height:464px;margin-right:432px"/>
      
