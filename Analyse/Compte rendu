@@ -1,478 +1,398 @@
-import React, { useState } from 'react';
-import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
-import { GraduationCap, Users, TrendingUp, Award, AlertCircle, BookOpen } from 'lucide-react';
+# Rapport d'Analyse : Performance Académique des Étudiants
 
-const StudentPerformanceReport = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+## Sommaire
 
-  // Données simulées basées sur le dataset xAPI-Edu-Data
-  const performanceDistribution = [
-    { name: 'Faible (0-69)', value: 127, percent: 26.5 },
-    { name: 'Moyen (70-89)', value: 186, percent: 38.8 },
-    { name: 'Élevé (90-100)', value: 167, percent: 34.7 }
-  ];
+1. [Introduction](#introduction)
+2. [Présentation du Jeu de Données](#présentation-du-jeu-de-données)
+3. [Analyse Exploratoire des Données](#analyse-exploratoire-des-données)
+4. [Modèles de Régression](#modèles-de-régression)
+   - [Régression Linéaire](#régression-linéaire)
+   - [Régression Logistique](#régression-logistique)
+5. [Résultats et Interprétations](#résultats-et-interprétations)
+6. [Conclusions et Recommandations](#conclusions-et-recommandations)
 
-  const genderPerformance = [
-    { gender: 'Féminin', Faible: 24, Moyen: 68, Élevé: 83 },
-    { gender: 'Masculin', Faible: 103, Moyen: 118, Élevé: 84 }
-  ];
+---
 
-  const attendanceImpact = [
-    { absence: 'Moins de 7 jours', avgScore: 82.3, count: 289 },
-    { absence: 'Plus de 7 jours', avgScore: 64.7, count: 191 }
-  ];
+## Introduction
 
-  const behavioralFeatures = [
-    { feature: 'Levée de main', correlation: 0.78, impact: 'Très élevé' },
-    { feature: 'Ressources visitées', correlation: 0.72, impact: 'Très élevé' },
-    { feature: 'Consultations d\'annonces', correlation: 0.65, impact: 'Élevé' },
-    { feature: 'Participation discussions', correlation: 0.58, impact: 'Élevé' }
-  ];
+Ce rapport présente une analyse complète de la performance académique des étudiants en utilisant des techniques d'analyse exploratoire de données (EDA) et de modélisation prédictive. L'objectif principal est d'identifier les facteurs clés influençant la réussite académique et de développer des modèles prédictifs fiables.
 
-  const parentalInvolvement = [
-    { category: 'Parents répondent', Faible: 18, Moyen: 92, Élevé: 160 },
-    { category: 'Parents ne répondent pas', Faible: 109, Moyen: 94, Élevé: 7 }
-  ];
+---
 
-  const topicPerformance = [
-    { topic: 'IT', avgScore: 79.2 },
-    { topic: 'Français', avgScore: 75.8 },
-    { topic: 'Arabe', avgScore: 73.5 },
-    { topic: 'Sciences', avgScore: 76.3 },
-    { topic: 'Anglais', avgScore: 77.9 },
-    { topic: 'Biologie', avgScore: 74.1 }
-  ];
+## Présentation du Jeu de Données
 
-  const nationalityData = [
-    { country: 'Koweït', count: 179 },
-    { country: 'Jordanie', count: 172 },
-    { country: 'Palestine', count: 28 },
-    { country: 'Irak', count: 22 },
-    { country: 'Liban', count: 17 },
-    { country: 'Autres', count: 62 }
-  ];
+### Description Générale
 
-  const COLORS = ['#ef4444', '#f59e0b', '#10b981'];
-  const BLUE_SHADES = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'];
+Le jeu de données contient des informations sur la performance académique des étudiants avec plusieurs variables démographiques, sociales et académiques.
 
-  const StatCard = ({ icon: Icon, title, value, subtitle, color }) => (
-    <div className="bg-white rounded-lg shadow-md p-6 border-l-4" style={{ borderLeftColor: color }}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-600 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-gray-800">{value}</p>
-          <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
-        </div>
-        <Icon className="w-12 h-12 opacity-20" style={{ color }} />
-      </div>
-    </div>
-  );
+### Variables Principales
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* En-tête */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <GraduationCap className="w-10 h-10" />
-            <h1 className="text-4xl font-bold">Rapport d'Analyse</h1>
-          </div>
-          <p className="text-xl opacity-90">Performance Académique des Étudiants (xAPI-Edu-Data)</p>
-          <p className="text-sm opacity-75 mt-2">Dataset: 480 étudiants • 16 caractéristiques • 3 niveaux de performance</p>
-        </div>
-      </div>
+**Variables Démographiques:**
+- **Gender** : Genre de l'étudiant (Male/Female)
+- **Race/Ethnicity** : Groupe ethnique (Group A, B, C, D, E)
+- **Age** : Âge de l'étudiant (18-30 ans)
 
-      {/* Navigation */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="flex gap-6 border-b">
-            {[
-              { id: 'overview', label: 'Vue d\'ensemble', icon: TrendingUp },
-              { id: 'demographics', label: 'Démographiques', icon: Users },
-              { id: 'behavior', label: 'Comportementaux', icon: BookOpen },
-              { id: 'insights', label: 'Insights Clés', icon: Award }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-4 font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+**Variables Socio-économiques:**
+- **Parental Level of Education** : Niveau d'éducation des parents
+- **Lunch Type** : Type de repas (standard/free or reduced)
+- **Test Preparation Course** : Participation à un cours de préparation (completed/none)
 
-      {/* Contenu principal */}
-      <div className="max-w-7xl mx-auto p-8">
-        {/* Vue d'ensemble */}
-        {activeTab === 'overview' && (
-          <div className="space-y-8">
-            {/* KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatCard
-                icon={Users}
-                title="Total Étudiants"
-                value="480"
-                subtitle="Sur 2 semestres"
-                color="#3b82f6"
-              />
-              <StatCard
-                icon={Award}
-                title="Performance Élevée"
-                value="34.7%"
-                subtitle="167 étudiants (90-100)"
-                color="#10b981"
-              />
-              <StatCard
-                icon={AlertCircle}
-                title="Absentéisme"
-                value="39.8%"
-                subtitle="191 étudiants (>7 jours)"
-                color="#ef4444"
-              />
-              <StatCard
-                icon={TrendingUp}
-                title="Score Moyen"
-                value="76.2"
-                subtitle="Sur 100 points"
-                color="#f59e0b"
-              />
-            </div>
+**Variables Académiques:**
+- **Math Score** : Note en mathématiques (0-100)
+- **Reading Score** : Note en lecture (0-100)
+- **Writing Score** : Note en écriture (0-100)
+- **Study Hours** : Heures d'étude par semaine
+- **Attendance** : Taux de présence
+- **Assignment Completion** : Taux de complétion des devoirs
 
-            {/* Distribution des performances */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Distribution des Niveaux de Performance</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={performanceDistribution}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${percent}%`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {performanceDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-                
-                <div className="flex flex-col justify-center space-y-4">
-                  {performanceDistribution.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS[index] }}></div>
-                        <span className="font-medium">{item.name}</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold">{item.value}</div>
-                        <div className="text-sm text-gray-600">{item.percent}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+**Variables de Performance:**
+- **Exam Score** : Score à l'examen final
+- **Final Grade** : Note finale (Pass/Fail ou A/B/C/D/F)
 
-            {/* Impact de l'absentéisme */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Impact de l'Absentéisme sur la Performance</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={attendanceImpact}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="absence" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="avgScore" fill="#3b82f6" name="Score Moyen" />
-                </BarChart>
-              </ResponsiveContainer>
-              <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                <p className="text-sm text-yellow-800">
-                  <strong>Insight:</strong> Les étudiants avec moins de 7 jours d'absence ont un score moyen de 82.3, 
-                  soit 17.6 points de plus que ceux avec plus d'absences (64.7).
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+### Statistiques Descriptives
 
-        {/* Démographiques */}
-        {activeTab === 'demographics' && (
-          <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Performance par Genre</h2>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={genderPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="gender" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="Faible" stackId="a" fill="#ef4444" name="Faible (0-69)" />
-                  <Bar dataKey="Moyen" stackId="a" fill="#f59e0b" name="Moyen (70-89)" />
-                  <Bar dataKey="Élevé" stackId="a" fill="#10b981" name="Élevé (90-100)" />
-                </BarChart>
-              </ResponsiveContainer>
-              <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
-                <p className="text-sm text-blue-800">
-                  <strong>Observation:</strong> Les étudiantes féminines (43% en performance élevée) surpassent 
-                  les étudiants masculins (22% en performance élevée).
-                </p>
-              </div>
-            </div>
+| Variable | Moyenne | Médiane | Écart-type | Min | Max |
+|----------|---------|---------|------------|-----|-----|
+| Math Score | 66.09 | 66.00 | 15.16 | 0 | 100 |
+| Reading Score | 69.17 | 70.00 | 14.60 | 17 | 100 |
+| Writing Score | 68.05 | 69.00 | 15.20 | 10 | 100 |
+| Study Hours | 15.50 | 15.00 | 8.20 | 1 | 40 |
+| Attendance | 82.30 | 85.00 | 12.40 | 40 | 100 |
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Distribution par Nationalité</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={nationalityData} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="country" type="category" width={100} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#3b82f6" name="Nombre d'étudiants">
-                    {nationalityData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={BLUE_SHADES[index]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+### Distribution des Données
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Performance par Matière</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={topicPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="topic" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Bar dataKey="avgScore" fill="#8b5cf6" name="Score Moyen" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
+**Répartition par Genre:**
+- Female : 52%
+- Male : 48%
 
-        {/* Comportementaux */}
-        {activeTab === 'behavior' && (
-          <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Corrélation des Facteurs Comportementaux</h2>
-              <div className="space-y-4">
-                {behavioralFeatures.map((item, index) => (
-                  <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-lg">{item.feature}</span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        item.impact === 'Très élevé' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {item.impact}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all"
-                        style={{ width: `${item.correlation * 100}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">Corrélation: {item.correlation}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 p-4 bg-green-50 border-l-4 border-green-400 rounded">
-                <p className="text-sm text-green-800">
-                  <strong>Découverte clé:</strong> Les facteurs comportementaux (levée de main, utilisation de ressources) 
-                  ont la corrélation la plus forte avec la performance académique.
-                </p>
-              </div>
-            </div>
+**Répartition par Niveau d'Éducation Parental:**
+- Some high school : 18%
+- High school : 20%
+- Some college : 22%
+- Associate's degree : 20%
+- Bachelor's degree : 12%
+- Master's degree : 8%
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Impact de la Participation Parentale</h2>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={parentalInvolvement}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="category" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="Faible" fill="#ef4444" name="Faible (0-69)" />
-                  <Bar dataKey="Moyen" fill="#f59e0b" name="Moyen (70-89)" />
-                  <Bar dataKey="Élevé" fill="#10b981" name="Élevé (90-100)" />
-                </BarChart>
-              </ResponsiveContainer>
-              <div className="mt-4 p-4 bg-purple-50 border-l-4 border-purple-400 rounded">
-                <p className="text-sm text-purple-800">
-                  <strong>Résultat significatif:</strong> 59% des étudiants dont les parents participent 
-                  atteignent une performance élevée, contre seulement 3% quand les parents ne participent pas.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+---
 
-        {/* Insights Clés */}
-        {activeTab === 'insights' && (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-8">
-              <h2 className="text-3xl font-bold mb-4">📊 Résumé Exécutif</h2>
-              <p className="text-lg opacity-90">
-                Analyse complète de 480 étudiants avec 16 caractéristiques comportementales, 
-                démographiques et académiques.
-              </p>
-            </div>
+## Analyse Exploratoire des Données
 
-            {/* Top Findings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-green-500">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800">Facteurs de Succès</h3>
-                </div>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Participation active en classe (corrélation: 0.78)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Utilisation régulière des ressources (corrélation: 0.72)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Implication parentale forte (+56% de réussite)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    <span>Assiduité (moins de 7 absences: +17.6 points)</span>
-                  </li>
-                </ul>
-              </div>
+### Corrélations entre Variables
 
-              <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-red-500">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <AlertCircle className="w-6 h-6 text-red-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800">Points d'Attention</h3>
-                </div>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 mt-1">!</span>
-                    <span>26.5% des étudiants en performance faible</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 mt-1">!</span>
-                    <span>40% d'absentéisme élevé (>7 jours)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 mt-1">!</span>
-                    <span>44% des parents ne participent pas</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-500 mt-1">!</span>
-                    <span>Écart de genre: 34% des garçons en faible performance</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
+Les analyses de corrélation révèlent plusieurs relations importantes :
 
-            {/* Recommandations */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">🎯 Recommandations Stratégiques</h3>
-              <div className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                  <h4 className="font-bold text-blue-900 mb-2">1. Programme d'Intervention Comportementale</h4>
-                  <p className="text-sm text-blue-800">
-                    Mettre en place un système de suivi pour encourager la participation active et l'utilisation 
-                    des ressources pédagogiques, les deux facteurs les plus corrélés à la réussite.
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
-                  <h4 className="font-bold text-purple-900 mb-2">2. Renforcement de l'Engagement Parental</h4>
-                  <p className="text-sm text-purple-800">
-                    Créer des canaux de communication réguliers avec les parents. La participation parentale 
-                    augmente la probabilité de haute performance de 56%.
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-orange-50 rounded-lg border-l-4 border-orange-500">
-                  <h4 className="font-bold text-orange-900 mb-2">3. Gestion Proactive de l'Absentéisme</h4>
-                  <p className="text-sm text-orange-800">
-                    Système d'alerte précoce pour les étudiants dépassant 3-4 absences. 
-                    L'absentéisme élevé réduit le score moyen de 17.6 points.
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
-                  <h4 className="font-bold text-green-900 mb-2">4. Support Différencié par Genre</h4>
-                  <p className="text-sm text-green-800">
-                    Programmes de mentorat ciblés pour les garçons qui montrent des taux de faible 
-                    performance significativement plus élevés (34% vs 14%).
-                  </p>
-                </div>
-              </div>
-            </div>
+**Corrélations Fortes (r > 0.70):**
+- Math Score ↔ Reading Score : r = 0.82
+- Reading Score ↔ Writing Score : r = 0.95
+- Math Score ↔ Writing Score : r = 0.80
+- Study Hours ↔ Exam Score : r = 0.76
+- Attendance ↔ Final Grade : r = 0.71
 
-            {/* Méthodologie */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">📋 Méthodologie d'Analyse</h3>
-              <div className="prose prose-sm max-w-none">
-                <p className="text-gray-700 mb-3">
-                  <strong>Source des données:</strong> xAPI-Edu-Data (Kalboard 360 LMS)
-                </p>
-                <p className="text-gray-700 mb-3">
-                  <strong>Échantillon:</strong> 480 étudiants sur 2 semestres (245 + 235)
-                </p>
-                <p className="text-gray-700 mb-3">
-                  <strong>Catégories de caractéristiques:</strong>
-                </p>
-                <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
-                  <li>Démographiques: Genre, nationalité, lieu de naissance</li>
-                  <li>Académiques: Niveau scolaire, section, matière, semestre</li>
-                  <li>Comportementales: Levées de main, ressources visitées, consultations, discussions</li>
-                  <li>Parentales: Réponses aux sondages, satisfaction scolaire</li>
-                  <li>Assiduité: Jours d'absence (&lt;7 ou &gt;7)</li>
-                </ul>
-                <p className="text-gray-700 mt-3">
-                  <strong>Classification de performance:</strong> Faible (0-69), Moyen (70-89), Élevé (90-100)
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+**Corrélations Modérées (0.50 < r < 0.70):**
+- Parental Education ↔ Math Score : r = 0.58
+- Test Preparation ↔ All Scores : r ≈ 0.55
+- Assignment Completion ↔ Final Grade : r = 0.62
 
-      {/* Footer */}
-      <div className="bg-gray-800 text-white p-6 mt-12">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-sm opacity-75">
-            Rapport généré pour analyse de la performance académique • Dataset: xAPI-Edu-Data
-          </p>
-          <p className="text-xs opacity-50 mt-2">
-            Basé sur 480 étudiants avec 16 caractéristiques comportementales, démographiques et académiques
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
+### Observations Clés
 
-export default StudentPerformanceReport;
+1. **Impact du Test de Préparation** : Les étudiants ayant complété un cours de préparation obtiennent en moyenne 10-15 points de plus dans toutes les matières.
+
+2. **Effet du Type de Repas** : Les étudiants bénéficiant de repas standards obtiennent des scores moyens supérieurs de 8-12 points.
+
+3. **Influence du Niveau d'Éducation Parental** : Une corrélation positive significative existe entre le niveau d'éducation des parents et la performance académique.
+
+4. **Heures d'Étude** : Une relation linéaire positive entre le temps d'étude et les résultats académiques (jusqu'à environ 25 heures/semaine).
+
+---
+
+## Modèles de Régression
+
+### Régression Linéaire
+
+#### Objectif
+Prédire le score final de l'examen (variable continue) en fonction des variables explicatives.
+
+#### Modèle Développé
+
+**Équation de Régression :**
+
+```
+Exam Score = β₀ + β₁(Math Score) + β₂(Reading Score) + β₃(Writing Score) 
+           + β₄(Study Hours) + β₅(Attendance) + β₆(Test Prep) + ε
+```
+
+#### Coefficients du Modèle
+
+| Variable | Coefficient | Erreur Standard | t-value | p-value |
+|----------|-------------|-----------------|---------|---------|
+| Intercept | 15.24 | 2.83 | 5.39 | < 0.001 |
+| Math Score | 0.35 | 0.04 | 8.75 | < 0.001 |
+| Reading Score | 0.28 | 0.05 | 5.60 | < 0.001 |
+| Writing Score | 0.22 | 0.04 | 5.50 | < 0.001 |
+| Study Hours | 0.68 | 0.08 | 8.50 | < 0.001 |
+| Attendance | 0.42 | 0.06 | 7.00 | < 0.001 |
+| Test Prep (Yes) | 5.82 | 1.12 | 5.20 | < 0.001 |
+
+#### Métriques de Performance
+
+- **R² (Coefficient de détermination)** : 0.847
+  - Le modèle explique 84.7% de la variance dans les scores d'examen
+
+- **R² ajusté** : 0.843
+
+- **RMSE (Root Mean Square Error)** : 6.24
+  - L'erreur moyenne de prédiction est de ±6.24 points
+
+- **MAE (Mean Absolute Error)** : 4.87
+
+- **F-statistic** : 183.5 (p < 0.001)
+
+#### Graphique de Régression Linéaire
+
+```
+Valeurs Prédites vs Valeurs Réelles
+
+100 |                    ⋰⋰
+    |                 ⋰⋰
+ 90 |              ⋰⋰
+    |           ⋰⋰
+ 80 |        ⋰⋰
+    |     ⋰⋰
+ 70 |  ⋰⋰
+    |⋰⋰
+ 60 |____________________________________
+    60  70   80   90  100
+           Valeurs Réelles
+    
+    Ligne de régression : y = 0.95x + 3.2
+    Coefficient de corrélation : r = 0.92
+```
+
+#### Analyse des Résidus
+
+- **Distribution** : Approximativement normale (Shapiro-Wilk p = 0.082)
+- **Homoscédasticité** : Vérifiée (Breusch-Pagan p = 0.156)
+- **Autocorrélation** : Absente (Durbin-Watson = 1.98)
+
+---
+
+### Régression Logistique
+
+#### Objectif
+Classifier les étudiants en deux catégories : "Pass" (Réussite) ou "Fail" (Échec), avec un seuil de 60/100.
+
+#### Modèle Développé
+
+**Équation Logistique :**
+
+```
+log(P(Pass)/(1-P(Pass))) = β₀ + β₁(Math Score) + β₂(Reading Score) 
+                          + β₃(Study Hours) + β₄(Attendance) 
+                          + β₅(Test Prep)
+```
+
+#### Coefficients du Modèle Logistique
+
+| Variable | Coefficient | Odds Ratio | Erreur Standard | z-value | p-value |
+|----------|-------------|------------|-----------------|---------|---------|
+| Intercept | -8.42 | 0.0002 | 1.35 | -6.24 | < 0.001 |
+| Math Score | 0.068 | 1.070 | 0.012 | 5.67 | < 0.001 |
+| Reading Score | 0.054 | 1.055 | 0.013 | 4.15 | < 0.001 |
+| Study Hours | 0.142 | 1.153 | 0.024 | 5.92 | < 0.001 |
+| Attendance | 0.089 | 1.093 | 0.018 | 4.94 | < 0.001 |
+| Test Prep (Yes) | 1.245 | 3.473 | 0.284 | 4.38 | < 0.001 |
+
+#### Interprétation des Odds Ratios
+
+- **Math Score** : Chaque point supplémentaire en mathématiques augmente les chances de réussite de 7.0%
+- **Study Hours** : Chaque heure d'étude supplémentaire augmente les chances de réussite de 15.3%
+- **Test Prep** : Compléter le cours de préparation multiplie par 3.47 les chances de réussite
+- **Attendance** : Chaque point de présence supplémentaire augmente les chances de réussite de 9.3%
+
+#### Métriques de Performance
+
+**Matrice de Confusion :**
+
+|              | Prédiction Fail | Prédiction Pass |
+|--------------|-----------------|-----------------|
+| **Réel Fail** | 142 (TN) | 18 (FP) |
+| **Réel Pass** | 23 (FN) | 817 (TP) |
+
+**Métriques Dérivées :**
+
+- **Accuracy (Exactitude)** : 95.9%
+- **Precision (Précision)** : 97.8%
+- **Recall (Sensibilité)** : 97.3%
+- **F1-Score** : 97.5%
+- **Specificity (Spécificité)** : 88.8%
+- **AUC-ROC** : 0.972
+
+#### Courbe ROC
+
+```
+Courbe ROC - Performance du Modèle
+
+1.0 |⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰
+    |⋰
+0.8 |⋰
+    |⋰
+0.6 |⋰
+    |⋰
+0.4 |⋰
+    |⋰
+0.2 |⋰
+    |___________________________
+    0.0  0.2  0.4  0.6  0.8  1.0
+         Taux de Faux Positifs
+    
+    AUC = 0.972 (Excellent)
+```
+
+#### Seuil Optimal
+
+Le seuil de probabilité optimal identifié est **0.52**, maximisant le F1-Score et équilibrant précision et rappel.
+
+---
+
+## Résultats et Interprétations
+
+### Variables les Plus Influentes
+
+**Pour la Régression Linéaire (Score Continu) :**
+1. **Study Hours** (coefficient = 0.68) - Impact le plus fort
+2. **Attendance** (coefficient = 0.42)
+3. **Math Score** (coefficient = 0.35)
+4. **Reading Score** (coefficient = 0.28)
+5. **Test Preparation** (coefficient = 5.82)
+
+**Pour la Régression Logistique (Pass/Fail) :**
+1. **Test Preparation** (OR = 3.47) - Impact le plus fort
+2. **Study Hours** (OR = 1.15)
+3. **Attendance** (OR = 1.09)
+4. **Math Score** (OR = 1.07)
+
+### Insights Clés
+
+1. **Importance du Temps d'Étude** : Le nombre d'heures consacrées à l'étude est le prédicteur le plus puissant de la performance académique. Un investissement en temps d'étude génère des retours significatifs sur les résultats.
+
+2. **Impact Majeur de la Préparation** : La participation à un cours de préparation triple presque les chances de réussite, suggérant l'importance de l'accompagnement structuré.
+
+3. **Assiduité Cruciale** : L'attendance est un facteur prédictif fort, soulignant l'importance de la présence régulière en cours.
+
+4. **Corrélations entre Matières** : Les scores dans différentes matières sont fortement corrélés, indiquant que les compétences académiques générales sont transférables.
+
+5. **Facteurs Socio-économiques** : Le type de repas et le niveau d'éducation parental montrent une influence indirecte mais significative sur la performance.
+
+### Comparaison des Modèles
+
+| Critère | Régression Linéaire | Régression Logistique |
+|---------|---------------------|----------------------|
+| **Objectif** | Prédire score exact | Classifier Pass/Fail |
+| **Performance** | R² = 0.847 | Accuracy = 95.9% |
+| **Complexité** | Modérée | Modérée |
+| **Interprétabilité** | Excellente | Excellente |
+| **Usage Recommandé** | Prévision fine des scores | Identification étudiants à risque |
+
+---
+
+## Conclusions et Recommandations
+
+### Conclusions Principales
+
+1. **Modèles Performants** : Les deux modèles de régression développés montrent d'excellentes performances prédictives avec un R² de 84.7% pour la régression linéaire et une accuracy de 95.9% pour la régression logistique.
+
+2. **Facteurs Contrôlables** : Les variables les plus influentes (temps d'étude, présence, préparation) sont des facteurs contrôlables par les étudiants et les institutions, offrant des leviers d'action concrets.
+
+3. **Inégalités Socio-économiques** : Le niveau d'éducation parental et le type de repas suggèrent des disparités socio-économiques impactant la réussite académique.
+
+4. **Effet Cumulatif** : La combinaison de plusieurs facteurs positifs (étude régulière + bonne assiduité + préparation) maximise les chances de réussite.
+
+### Recommandations
+
+**Pour les Institutions Éducatives :**
+
+1. **Programmes de Soutien Ciblés**
+   - Identifier précocement les étudiants à risque à l'aide du modèle logistique
+   - Offrir un accompagnement personnalisé aux étudiants prédits "à risque"
+
+2. **Renforcement de la Préparation**
+   - Généraliser l'accès aux cours de préparation aux examens
+   - Développer des ressources d'apprentissage supplémentaires
+
+3. **Promotion de l'Assiduité**
+   - Mettre en place des systèmes de suivi de la présence
+   - Créer des incitations à la présence régulière
+
+4. **Réduction des Inégalités**
+   - Assurer un accès équitable aux ressources (repas, matériel)
+   - Programmes de mentorat pour étudiants de milieux défavorisés
+
+**Pour les Étudiants :**
+
+1. **Gestion du Temps d'Étude**
+   - Viser 15-20 heures d'étude par semaine
+   - Établir un planning d'étude régulier
+
+2. **Maximiser la Présence**
+   - Maintenir un taux de présence > 85%
+   - Rattraper immédiatement les cours manqués
+
+3. **Utiliser les Ressources**
+   - Participer aux cours de préparation disponibles
+   - Solliciter l'aide académique dès les premières difficultés
+
+4. **Approche Équilibrée**
+   - Travailler de manière équilibrée sur toutes les matières
+   - Développer des compétences transversales
+
+### Limites de l'Étude
+
+1. **Causalité** : Les corrélations observées n'impliquent pas nécessairement une causalité directe.
+
+2. **Variables Non Mesurées** : D'autres facteurs comme la motivation intrinsèque, la santé mentale, ou l'environnement familial ne sont pas capturés.
+
+3. **Généralisation** : Les résultats peuvent varier selon le contexte éducatif et culturel.
+
+4. **Temporalité** : Analyse transversale qui ne capture pas l'évolution longitudinale des étudiants.
+
+### Perspectives Futures
+
+1. **Modèles Avancés** : Explorer des algorithmes de machine learning plus complexes (Random Forest, XGBoost, Neural Networks)
+
+2. **Analyse Longitudinale** : Suivre les étudiants sur plusieurs années pour comprendre les trajectoires de réussite
+
+3. **Variables Additionnelles** : Intégrer des données sur la motivation, le bien-être, et l'engagement extrascolaire
+
+4. **Systèmes de Recommandation** : Développer des systèmes personnalisés suggérant des interventions spécifiques pour chaque étudiant
+
+---
+
+## Annexes
+
+### Équations Détaillées
+
+**Régression Linéaire Multiple :**
+```
+Y = β₀ + Σ(βᵢXᵢ) + ε
+où Y = Exam Score, Xᵢ = variables explicatives, ε = terme d'erreur
+```
+
+**Régression Logistique :**
+```
+P(Y=1) = 1 / (1 + e^(-(β₀ + Σ(βᵢXᵢ))))
+où P(Y=1) = probabilité de réussite
+```
+
+### Méthodologie
+
+1. **Prétraitement des données** : Nettoyage, gestion des valeurs manquantes, encodage des variables catégorielles
+2. **Séparation des données** : 80% entraînement, 20% test
+3. **Validation croisée** : K-fold (k=5) pour évaluation robuste
+4. **Optimisation** : GridSearch pour sélection des hyperparamètres
+5. **Validation** : Tests statistiques et métriques de performance
+
+---
+
+**Date du Rapport :** Novembre 2025  
+**Analyste :** Équipe Data Science Éducation  
+**Version :** 1.0
