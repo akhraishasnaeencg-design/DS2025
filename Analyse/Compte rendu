@@ -116,10 +116,7 @@ Prédire le score final de l'examen (variable continue) en fonction des variable
 
 **Équation de Régression :**
 
-```
-Exam Score = β₀ + β₁(Math Score) + β₂(Reading Score) + β₃(Writing Score) 
-           + β₄(Study Hours) + β₅(Attendance) + β₆(Test Prep) + ε
-```
+$\text{Exam Score} = \beta_0 + \beta_1(\text{Math Score}) + \beta_2(\text{Reading Score}) + \beta_3(\text{Writing Score}) + \beta_4(\text{Study Hours}) + \beta_5(\text{Attendance}) + \beta_6(\text{Test Prep}) + \varepsilon$
 
 #### Coefficients du Modèle
 
@@ -149,24 +146,11 @@ Exam Score = β₀ + β₁(Math Score) + β₂(Reading Score) + β₃(Writing Sc
 
 #### Graphique de Régression Linéaire
 
-```
-Valeurs Prédites vs Valeurs Réelles
-
-100 |                    ⋰⋰
-    |                 ⋰⋰
- 90 |              ⋰⋰
-    |           ⋰⋰
- 80 |        ⋰⋰
-    |     ⋰⋰
- 70 |  ⋰⋰
-    |⋰⋰
- 60 |____________________________________
-    60  70   80   90  100
-           Valeurs Réelles
-    
-    Ligne de régression : y = 0.95x + 3.2
-    Coefficient de corrélation : r = 0.92
-```
+**Interprétation Graphique :**
+- Les valeurs prédites par le modèle sont très proches des valeurs réelles
+- La ligne de régression suit la tendance : y = 0.95x + 3.2
+- Coefficient de corrélation : r = 0.92 (très forte corrélation)
+- Les points sont bien répartis autour de la ligne de régression, indiquant un bon ajustement
 
 #### Analyse des Résidus
 
@@ -185,11 +169,7 @@ Classifier les étudiants en deux catégories : "Pass" (Réussite) ou "Fail" (É
 
 **Équation Logistique :**
 
-```
-log(P(Pass)/(1-P(Pass))) = β₀ + β₁(Math Score) + β₂(Reading Score) 
-                          + β₃(Study Hours) + β₄(Attendance) 
-                          + β₅(Test Prep)
-```
+$\log\left(\frac{P(\text{Pass})}{1-P(\text{Pass})}\right) = \beta_0 + \beta_1(\text{Math Score}) + \beta_2(\text{Reading Score}) + \beta_3(\text{Study Hours}) + \beta_4(\text{Attendance}) + \beta_5(\text{Test Prep})$
 
 #### Coefficients du Modèle Logistique
 
@@ -229,24 +209,11 @@ log(P(Pass)/(1-P(Pass))) = β₀ + β₁(Math Score) + β₂(Reading Score)
 
 #### Courbe ROC
 
-```
-Courbe ROC - Performance du Modèle
-
-1.0 |⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰⋰
-    |⋰
-0.8 |⋰
-    |⋰
-0.6 |⋰
-    |⋰
-0.4 |⋰
-    |⋰
-0.2 |⋰
-    |___________________________
-    0.0  0.2  0.4  0.6  0.8  1.0
-         Taux de Faux Positifs
-    
-    AUC = 0.972 (Excellent)
-```
+**Performance du Modèle :**
+- **AUC (Area Under Curve) = 0.972** - Performance excellente
+- Le modèle distingue très bien entre les classes Pass et Fail
+- Taux de vrais positifs élevé avec un faible taux de faux positifs
+- Seuil optimal identifié à 0.52 pour maximiser le F1-Score
 
 #### Seuil Optimal
 
@@ -372,16 +339,22 @@ Le seuil de probabilité optimal identifié est **0.52**, maximisant le F1-Score
 ### Équations Détaillées
 
 **Régression Linéaire Multiple :**
-```
-Y = β₀ + Σ(βᵢXᵢ) + ε
-où Y = Exam Score, Xᵢ = variables explicatives, ε = terme d'erreur
-```
+
+$Y = \beta_0 + \sum_{i=1}^{n}(\beta_i X_i) + \varepsilon$
+
+où :
+- Y = Exam Score (variable dépendante)
+- X<sub>i</sub> = variables explicatives
+- β<sub>i</sub> = coefficients de régression
+- ε = terme d'erreur
 
 **Régression Logistique :**
-```
-P(Y=1) = 1 / (1 + e^(-(β₀ + Σ(βᵢXᵢ))))
-où P(Y=1) = probabilité de réussite
-```
+
+$P(Y=1) = \frac{1}{1 + e^{-(\beta_0 + \sum_{i=1}^{n} \beta_i X_i)}}$
+
+où :
+- P(Y=1) = probabilité de réussite (Pass)
+- e = constante d'Euler (≈ 2.718)
 
 ### Méthodologie
 
